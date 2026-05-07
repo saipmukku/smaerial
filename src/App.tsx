@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import MuxPlayer from '@mux/mux-player-react'
 import heroImage from './assets/hero.png'
 import './App.css'
 
@@ -43,30 +44,21 @@ const portfolioItems = [
 const portfolioVideos = [
   {
     title: 'Aerial video 1',
-    embedUrl: 'https://drive.google.com/file/d/1iCSgnwni1BqVWBNzv29I6pr9yNFrnxWv/preview',
+    playbackId: 'R02Yp011LtG1bUkTIkmnX011cXYVv02WlMIUbhdM9MPRNPk',
   },
   {
     title: 'Aerial video 2',
-    embedUrl: 'https://drive.google.com/file/d/1sJ2iJ3gvNGlX4tqD3nW-9vrwtVwr2dj3/preview',
+    playbackId: 'k5lLII3mNyFpGUnUPFNjdepNl02wg3BaHoUuNYc00vXBY',
   },
   {
     title: 'Aerial video 3',
-    embedUrl: 'https://drive.google.com/file/d/19wY-YGJqXGToRRYxiIFm3hAmWTs0OYed/preview',
+    playbackId: 'jchZ1bzM00gKlzv9WweXESxjqKDMIzzvOqVZLRYWo828',
   },
   {
     title: 'Aerial video 4',
-    embedUrl: 'https://drive.google.com/file/d/17zT9kv3Fx4zwvFP06qzIxA74qW2WHNve/preview',
+    playbackId: 'M5Hws2Czs65x1svc2so3y8uzsYdXPFJ7GrgPfW6FVnM',
   },
 ]
-
-function getDrivePlaybackUrl(embedUrl: string) {
-  if (!embedUrl.trim()) {
-    return ''
-  }
-
-  const separator = embedUrl.includes('?') ? '&' : '?'
-  return `${embedUrl}${separator}autoplay=1&mute=1&playsinline=1&vq=hd1080`
-}
 
 type PortfolioItem = (typeof portfolioItems)[number]
 
@@ -76,8 +68,12 @@ type LightboxImage = {
 }
 
 type LightboxVideo = {
-  embedUrl: string
+  playbackId: string
   title: string
+}
+
+function getMuxStreamUrl(playbackId: string) {
+  return `https://stream.mux.com/${playbackId}.m3u8?max_resolution=1080p&rendition_order=desc`
 }
 
 function ImageLightbox({ image, onClose }: { image: LightboxImage | null; onClose: () => void }) {
@@ -103,8 +99,6 @@ function VideoLightbox({ video, onClose }: { video: LightboxVideo | null; onClos
     return null
   }
 
-  const playbackUrl = getDrivePlaybackUrl(video.embedUrl)
-
   return (
     <div className="image-lightbox" role="dialog" aria-modal="true" aria-label="Expanded portfolio video">
       <button className="lightbox-backdrop" type="button" aria-label="Close video preview" onClick={onClose} />
@@ -112,14 +106,20 @@ function VideoLightbox({ video, onClose }: { video: LightboxVideo | null; onClos
         <button className="lightbox-close" type="button" aria-label="Close video preview" onClick={onClose}>
           Close
         </button>
-        <iframe
-          src={playbackUrl}
+        <MuxPlayer
+          className="lightbox-video-player"
+          playbackId={video.playbackId}
           title={video.title}
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-          allowFullScreen
-          loading="eager"
-          sandbox="allow-scripts allow-same-origin allow-presentation"
-          referrerPolicy="no-referrer-when-downgrade"
+          videoTitle={video.title}
+          streamType="on-demand"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          maxResolution="1080p"
+          maxAutoResolution="1080p"
+          renditionOrder="desc"
         />
       </div>
     </div>
@@ -151,15 +151,66 @@ function PortfolioImageTile({
 
 function PortfolioVideoTile({
   title,
-  embedUrl,
+  playbackId,
   onOpen,
 }: {
   title: string
-  embedUrl: string
+  playbackId: string
   onOpen: (video: LightboxVideo) => void
 }) {
-  const hasEmbed = embedUrl.trim().length > 0
-  const playbackUrl = getDrivePlaybackUrl(embedUrl)
+  const hasPlaybackId = playbackId.trim().length > 0
+  const streamUrl = hasPlaybackId ? getMuxStreamUrl(playbackId) : ''
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+
+    if (!video || !hasPlaybackId) {
+      return
+    }
+
+    const playPreview = () => {
+      video.muted = true
+      video.defaultMuted = true
+      video.playsInline = true
+      video.setAttribute('muted', '')
+      video.setAttribute('playsinline', '')
+      void video.play().catch(() => {})
+    }
+
+    playPreview()
+    video.addEventListener('loadedmetadata', playPreview)
+    video.addEventListener('loadeddata', playPreview)
+    video.addEventListener('canplay', playPreview)
+    video.addEventListener('canplaythrough', playPreview)
+    video.addEventListener('playing', playPreview)
+    video.addEventListener('pause', playPreview)
+    window.addEventListener('load', playPreview)
+    document.addEventListener('visibilitychange', playPreview)
+
+    const retryPlayback = window.setInterval(() => {
+      if (video.paused) {
+        playPreview()
+      }
+    }, 750)
+
+    const stopRetrying = window.setTimeout(() => {
+      window.clearInterval(retryPlayback)
+    }, 10000)
+
+    return () => {
+      window.clearInterval(retryPlayback)
+      window.clearTimeout(stopRetrying)
+      video.removeEventListener('loadedmetadata', playPreview)
+      video.removeEventListener('loadeddata', playPreview)
+      video.removeEventListener('canplay', playPreview)
+      video.removeEventListener('canplaythrough', playPreview)
+      video.removeEventListener('playing', playPreview)
+      video.removeEventListener('pause', playPreview)
+      window.removeEventListener('load', playPreview)
+      document.removeEventListener('visibilitychange', playPreview)
+    }
+  }, [hasPlaybackId, streamUrl])
 
   return (
     <button
@@ -167,24 +218,34 @@ function PortfolioVideoTile({
       type="button"
       aria-label={`View larger video: ${title}`}
       onClick={() => {
-        if (hasEmbed) {
-          onOpen({ embedUrl, title })
+        if (hasPlaybackId) {
+          onOpen({ playbackId, title })
         }
       }}
-      disabled={!hasEmbed}
+      disabled={!hasPlaybackId}
     >
-      {hasEmbed ? (
-        <iframe
-          src={playbackUrl}
-          title={title}
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-          allowFullScreen
-          loading="eager"
-          sandbox="allow-scripts allow-same-origin allow-presentation"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
+      {hasPlaybackId ? (
+        <video
+          ref={videoRef}
+          className="portfolio-video-player"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          aria-label={title}
+          onCanPlay={() => {
+            const video = videoRef.current
+            if (video) {
+              video.muted = true
+              void video.play().catch(() => {})
+            }
+          }}
+        >
+          <source src={streamUrl} type="application/x-mpegURL" />
+        </video>
       ) : (
-        <span>Paste Google Drive embed link</span>
+        <span>Add Mux playback ID</span>
       )}
     </button>
   )
@@ -236,11 +297,12 @@ function PortfolioPage() {
         <div className="section-heading">
           <p className="eyebrow">Video</p>
           <h2>Aerial video</h2>
+          <p className="video-note">Note: Please left-click to start the videos!</p>
         </div>
         <div className="portfolio-video-grid">
           {portfolioVideos.map((video) => (
             <article className="portfolio-video-card" key={video.title}>
-              <PortfolioVideoTile title={video.title} embedUrl={video.embedUrl} onOpen={setActiveVideo} />
+              <PortfolioVideoTile title={video.title} playbackId={video.playbackId} onOpen={setActiveVideo} />
             </article>
           ))}
         </div>

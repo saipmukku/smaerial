@@ -424,7 +424,7 @@ h3 {
 }
 
 .lightbox-panel img,
-.lightbox-panel iframe {
+.lightbox-panel .lightbox-video-player {
   display: block;
   width: 100%;
   max-height: 82vh;
@@ -481,7 +481,7 @@ h3 {
   cursor: pointer;
 }
 
-.portfolio-video-card iframe,
+.portfolio-video-card .portfolio-video-player,
 .portfolio-video-card span {
   display: block;
   width: 100%;
@@ -491,9 +491,10 @@ h3 {
     filter 0.25s ease;
 }
 
-.portfolio-video-card iframe {
-  border: 0;
+.portfolio-video-card .portfolio-video-player {
   pointer-events: none;
+  background: #18212c;
+  object-fit: cover;
 }
 
 .portfolio-video-card span {
@@ -508,7 +509,7 @@ h3 {
   text-align: center;
 }
 
-.portfolio-video-button:hover iframe {
+.portfolio-video-button:hover .portfolio-video-player {
   transform: scale(1.035);
   filter: saturate(1.05) contrast(1.02);
 }
@@ -517,7 +518,7 @@ h3 {
   cursor: default;
 }
 
-.lightbox-panel iframe {
+.lightbox-panel .lightbox-video-player {
   aspect-ratio: 16 / 10;
   border: 10px solid #fff;
   pointer-events: auto;
