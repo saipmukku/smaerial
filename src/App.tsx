@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import heroImage from './assets/hero.png'
 import './App.css'
 
@@ -43,21 +43,30 @@ const portfolioItems = [
 const portfolioVideos = [
   {
     title: 'Aerial video 1',
-    src: '/videos/portfoliovid1.mp4',
+    embedUrl: 'https://drive.google.com/file/d/1iCSgnwni1BqVWBNzv29I6pr9yNFrnxWv/preview',
   },
   {
     title: 'Aerial video 2',
-    src: '/videos/portfoliovid2.mp4',
+    embedUrl: 'https://drive.google.com/file/d/1sJ2iJ3gvNGlX4tqD3nW-9vrwtVwr2dj3/preview',
   },
   {
     title: 'Aerial video 3',
-    src: '/videos/portfoliovid3.MP4',
+    embedUrl: 'https://drive.google.com/file/d/19wY-YGJqXGToRRYxiIFm3hAmWTs0OYed/preview',
   },
   {
     title: 'Aerial video 4',
-    src: '/videos/portfoliovid4.mp4',
+    embedUrl: 'https://drive.google.com/file/d/17zT9kv3Fx4zwvFP06qzIxA74qW2WHNve/preview',
   },
 ]
+
+function getDrivePlaybackUrl(embedUrl: string) {
+  if (!embedUrl.trim()) {
+    return ''
+  }
+
+  const separator = embedUrl.includes('?') ? '&' : '?'
+  return `${embedUrl}${separator}autoplay=1&mute=1&playsinline=1&vq=hd1080`
+}
 
 type PortfolioItem = (typeof portfolioItems)[number]
 
@@ -67,7 +76,7 @@ type LightboxImage = {
 }
 
 type LightboxVideo = {
-  src: string
+  embedUrl: string
   title: string
 }
 
@@ -94,6 +103,8 @@ function VideoLightbox({ video, onClose }: { video: LightboxVideo | null; onClos
     return null
   }
 
+  const playbackUrl = getDrivePlaybackUrl(video.embedUrl)
+
   return (
     <div className="image-lightbox" role="dialog" aria-modal="true" aria-label="Expanded portfolio video">
       <button className="lightbox-backdrop" type="button" aria-label="Close video preview" onClick={onClose} />
@@ -101,9 +112,15 @@ function VideoLightbox({ video, onClose }: { video: LightboxVideo | null; onClos
         <button className="lightbox-close" type="button" aria-label="Close video preview" onClick={onClose}>
           Close
         </button>
-        <video aria-label={video.title} autoPlay loop muted playsInline controls>
-          <source src={video.src} type="video/mp4" />
-        </video>
+        <iframe
+          src={playbackUrl}
+          title={video.title}
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowFullScreen
+          loading="eager"
+          sandbox="allow-scripts allow-same-origin allow-presentation"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
       </div>
     </div>
   )
@@ -134,73 +151,41 @@ function PortfolioImageTile({
 
 function PortfolioVideoTile({
   title,
-  src,
+  embedUrl,
   onOpen,
 }: {
   title: string
-  src: string
+  embedUrl: string
   onOpen: (video: LightboxVideo) => void
 }) {
-  const videoRef = useRef<HTMLVideoElement | null>(null)
-
-  useEffect(() => {
-    const video = videoRef.current
-
-    if (!video) {
-      return
-    }
-
-    const playVideo = () => {
-      video.muted = true
-      video.defaultMuted = true
-      video.playsInline = true
-      video.setAttribute('muted', '')
-      video.setAttribute('playsinline', '')
-      void video.play().catch(() => {
-        // Browser autoplay policies can still block playback in some settings.
-      })
-    }
-
-    video.muted = true
-    video.defaultMuted = true
-    playVideo()
-
-    video.addEventListener('loadedmetadata', playVideo)
-    video.addEventListener('canplay', playVideo)
-    document.addEventListener('visibilitychange', playVideo)
-
-    return () => {
-      video.removeEventListener('loadedmetadata', playVideo)
-      video.removeEventListener('canplay', playVideo)
-      document.removeEventListener('visibilitychange', playVideo)
-    }
-  }, [src])
+  const hasEmbed = embedUrl.trim().length > 0
+  const playbackUrl = getDrivePlaybackUrl(embedUrl)
 
   return (
     <button
       className="portfolio-video-button"
       type="button"
       aria-label={`View larger video: ${title}`}
-      onClick={() => onOpen({ src, title })}
+      onClick={() => {
+        if (hasEmbed) {
+          onOpen({ embedUrl, title })
+        }
+      }}
+      disabled={!hasEmbed}
     >
-      <video
-        ref={videoRef}
-        aria-label={title}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        onCanPlay={() => {
-          const video = videoRef.current
-          if (video) {
-            video.muted = true
-            void video.play().catch(() => {})
-          }
-        }}
-      >
-        <source src={src} type="video/mp4" />
-      </video>
+      {hasEmbed ? (
+        <iframe
+          src={playbackUrl}
+          title={title}
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowFullScreen
+          loading="eager"
+          sandbox="allow-scripts allow-same-origin allow-presentation"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      ) : (
+        <span>Paste Google Drive embed link</span>
+      )}
     </button>
   )
 }
@@ -254,8 +239,8 @@ function PortfolioPage() {
         </div>
         <div className="portfolio-video-grid">
           {portfolioVideos.map((video) => (
-            <article className="portfolio-video-card" key={video.src}>
-              <PortfolioVideoTile title={video.title} src={video.src} onOpen={setActiveVideo} />
+            <article className="portfolio-video-card" key={video.title}>
+              <PortfolioVideoTile title={video.title} embedUrl={video.embedUrl} onOpen={setActiveVideo} />
             </article>
           ))}
         </div>
