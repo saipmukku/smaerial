@@ -393,7 +393,7 @@ function HomePage() {
             </article>
           ))}
         </div>
-        <a className="view-more-link" href="/portfolio">
+        <a className="view-more-link" href="#portfolio">
           View more -&gt;
         </a>
       </section>
@@ -460,7 +460,9 @@ function HomePage() {
 }
 
 function App() {
-  if (window.location.pathname === '/portfolio') {
+  const path = window.location.pathname.replace(/\/$/, '')
+
+  if (path === '/portfolio') {
     return <PortfolioPage />
   }
 
