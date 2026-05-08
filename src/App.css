@@ -320,6 +320,43 @@ h3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.free-intro-callout {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 28px;
+  border: 1px solid rgba(65, 105, 225, 0.18);
+  border-radius: 18px;
+  padding: 26px 30px;
+  background:
+    linear-gradient(135deg, rgba(65, 105, 225, 0.13), rgba(151, 188, 98, 0.2)),
+    #fff;
+  box-shadow:
+    0 20px 48px rgba(25, 38, 52, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.72) inset;
+}
+
+.free-intro-callout::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7px;
+  background: linear-gradient(180deg, var(--trim), var(--green));
+  content: '';
+}
+
+.free-intro-callout h3 {
+  margin-bottom: 10px;
+  color: #18212c;
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+}
+
+.free-intro-callout p:last-child {
+  max-width: 920px;
+  margin-bottom: 0;
+  color: #344250;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
 .service-card,
 .portfolio-card,
 .contact-form {
@@ -1188,6 +1225,17 @@ h3 {
   .service-card {
     min-height: auto;
     padding: 24px;
+  }
+
+  .free-intro-callout {
+    padding: 24px 22px;
+    text-align: center;
+  }
+
+  .free-intro-callout::before {
+    inset: 0 0 auto;
+    width: auto;
+    height: 6px;
   }
 
   .why-list {

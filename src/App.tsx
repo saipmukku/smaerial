@@ -367,6 +367,20 @@ function WhySmaerialList() {
   )
 }
 
+function FreeIntroCallout() {
+  return (
+    <div className="free-intro-callout">
+      <p className="eyebrow">Free 30-minute session</p>
+      <h3>Try the service before choosing a package.</h3>
+      <p>
+        If you are interested in SMAerial, I offer a completely free 30-minute session so you
+        can get a clear idea of whether aerial photos or videos will benefit your project. This is
+        available for every prospective client at no charge, please contact me through the form below and select "Trial"!
+      </p>
+    </div>
+  )
+}
+
 function PortfolioPage() {
   const [activeImage, setActiveImage] = useState<LightboxImage | null>(null)
   const [activeVideo, setActiveVideo] = useState<LightboxVideo | null>(null)
@@ -508,6 +522,7 @@ function ServicePage({ initialServiceSlug }: { initialServiceSlug?: string }) {
       </section>
 
       <section className="service-page-section">
+        <FreeIntroCallout />
         <div className="service-detail-stack">
           {[...services, customService].map((service) => (
             <ServiceDetailCard service={service} key={service.slug} />
@@ -682,6 +697,7 @@ function HomePage() {
           <p className="eyebrow">Services</p>
           <h2>Built for listings, locations, and launch-ready campaigns.</h2>
         </div>
+        <FreeIntroCallout />
         <div className="service-grid">
           {services.map((service) => (
             <a className="service-card" href={`/services#${service.slug}`} key={service.title}>
@@ -756,6 +772,7 @@ function HomePage() {
               <option value="Business Package">Business Package</option>
               <option value="Premium Package">Premium Package</option>
               <option value="Custom Inquiry">Custom Inquiry</option>
+              <option value="Trial">Trial</option>
             </select>
           </div>
           <div className="form-field">
