@@ -130,6 +130,7 @@
 
 .hero-copy {
   max-width: 720px;
+  animation: hero-copy-rise 0.75s ease both;
 }
 
 .eyebrow {
@@ -255,6 +256,9 @@ h3 {
   position: absolute;
   inset: 18px 0 44px 26px;
   transform: rotate(2deg);
+  animation:
+    hero-frame-enter 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    hero-frame-float 5.5s ease-in-out 1s infinite;
 }
 
 .frame-image {
@@ -284,6 +288,58 @@ h3 {
   bottom: -44px;
   width: min(46%, 260px);
   filter: drop-shadow(0 22px 30px rgba(65, 105, 225, 0.2));
+  animation: hero-device-pop 0.75s ease 0.35s both;
+}
+
+@keyframes hero-copy-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-frame-enter {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.96) rotate(-1deg);
+    box-shadow: 0 12px 36px rgba(25, 38, 52, 0.08);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(2deg);
+    box-shadow: 0 24px 70px rgba(25, 38, 52, 0.18);
+  }
+}
+
+@keyframes hero-frame-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(2deg);
+    box-shadow: 0 24px 70px rgba(25, 38, 52, 0.18);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(1.2deg);
+    box-shadow: 0 30px 80px rgba(65, 105, 225, 0.2);
+  }
+}
+
+@keyframes hero-device-pop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .section {
@@ -1077,7 +1133,9 @@ h3 {
   .photo-frame-large {
     position: relative;
     inset: auto;
-    transform: none;
+    animation:
+      hero-frame-enter-mobile 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+      hero-frame-float-mobile 5.5s ease-in-out 1s infinite;
   }
 
   .frame-image {
@@ -1096,6 +1154,41 @@ h3 {
 
   .contact-form {
     justify-self: center;
+  }
+}
+
+@keyframes hero-frame-enter-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+    box-shadow: 0 12px 36px rgba(25, 38, 52, 0.08);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    box-shadow: 0 24px 70px rgba(25, 38, 52, 0.18);
+  }
+}
+
+@keyframes hero-frame-float-mobile {
+  0%,
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 24px 70px rgba(25, 38, 52, 0.18);
+  }
+
+  50% {
+    transform: translateY(-7px);
+    box-shadow: 0 28px 74px rgba(65, 105, 225, 0.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy,
+  .photo-frame-large,
+  .brand-device {
+    animation: none;
   }
 }
 

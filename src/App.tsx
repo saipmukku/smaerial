@@ -546,7 +546,7 @@ function HomePage() {
 
     return wasSent || pendingToast
   })
-  const formReturnUrl = `${window.location.origin}${window.location.pathname}?sent=1#contact`
+  const formReturnUrl = `${window.location.origin}/?sent=1#contact`
   const selectedPackage =
     services.find((service) => service.slug === new URLSearchParams(window.location.search).get('package'))?.title ?? ''
 
@@ -572,6 +572,12 @@ function HomePage() {
     }
 
     window.scrollTo({ top: Math.max(targetTop - 92, 0), behavior: 'smooth' })
+  }, [])
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('sent')) {
+      window.history.replaceState(null, '', '/')
+    }
   }, [])
 
   useEffect(() => {
