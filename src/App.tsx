@@ -50,7 +50,31 @@ const services = [
   },
 ]
 
-const portfolioItems = [
+const whySmaerialPoints = [
+  'Quick turnaround for listing deadlines, launches, and social schedules',
+  'Interactive, friendly service from planning through delivery',
+  'High-quality aerial camera equipment for sharp, polished visuals',
+  'State-of-the-art editing software for clean, professional outcomes',
+  'Shot planning built around how the photos and videos will actually be used',
+  'Flexible delivery options for raw files, edited assets, and marketing-ready content',
+]
+
+const customService = {
+  title: 'Custom Inquiry',
+  slug: 'custom',
+  price: 'Negotiable',
+  session: 'Built around your project',
+  summary: 'A tailored package for unique shoots, custom deliverables, and negotiated pricing.',
+  bestFor: 'Projects that need a tailored mix of photos, videos, editing, raw files, timing, or delivery options.',
+  details: [
+    'Choose the photo and video deliverables that fit your goals',
+    'Request a custom mix of raw files, edited files, or marketing-ready content',
+    'Plan around unique locations, deadlines, business needs, or creative ideas',
+    'Pricing can be negotiated based on scope, time, editing, and delivery needs',
+  ],
+}
+
+const homepagePortfolioItems = [
   {
     title: 'Scenic & Lifestyle',
     text: 'Hero angles for property marketing, social media, and brand storytelling that show the whole place and the lifestyle it offers.',
@@ -73,6 +97,30 @@ const portfolioItems = [
   },
 ]
 
+const expandedPortfolioItems = [
+  {
+    title: 'Portfolio Feature 1',
+    text: 'Expanded aerial portfolio image.',
+    image: '/images/portimg1.JPG',
+  },
+  {
+    title: 'Portfolio Feature 2',
+    text: 'Expanded aerial portfolio image.',
+    image: '/images/portimg2.JPG',
+  },
+  {
+    title: 'Portfolio Feature 3',
+    text: 'Expanded aerial portfolio image.',
+    image: '/images/portimg3.JPG',
+  },
+  {
+    title: 'Portfolio Feature 4',
+    text: 'Expanded aerial portfolio image.',
+    image: '/images/portimg4.JPG',
+  },
+  ...homepagePortfolioItems,
+]
+
 const portfolioVideos = [
   {
     title: 'Aerial video 1',
@@ -92,7 +140,7 @@ const portfolioVideos = [
   },
 ]
 
-type PortfolioItem = (typeof portfolioItems)[number]
+type PortfolioItem = (typeof expandedPortfolioItems)[number]
 type ServicePackage = (typeof services)[number]
 
 type LightboxImage = {
@@ -306,6 +354,19 @@ function PortfolioVideoTile({
   )
 }
 
+function WhySmaerialList() {
+  return (
+    <div className="why-list" aria-label="SMAerial advantages">
+      {whySmaerialPoints.map((point) => (
+        <div className="why-list-item" key={point}>
+          <span aria-hidden="true">✓</span>
+          <p>{point}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function PortfolioPage() {
   const [activeImage, setActiveImage] = useState<LightboxImage | null>(null)
   const [activeVideo, setActiveVideo] = useState<LightboxVideo | null>(null)
@@ -320,8 +381,8 @@ function PortfolioPage() {
           </a>
           <div className="nav-links">
             <a href="/">Home</a>
-            <a href="/#services">Services</a>
-            <a href="/#portfolio">Portfolio</a>
+            <a href="/portfolio">Portfolio</a>
+            <a href="/services">Services</a>
             <a href="/#contact">Contact</a>
           </div>
         </nav>
@@ -341,7 +402,7 @@ function PortfolioPage() {
           <h2>Aerial photography</h2>
         </div>
         <div className="expanded-portfolio-grid">
-          {portfolioItems.map((item) => (
+          {expandedPortfolioItems.map((item) => (
             <article className="expanded-portfolio-card" key={item.title}>
               <PortfolioImageTile item={item} variant="expanded" onOpen={setActiveImage} />
             </article>
@@ -369,7 +430,58 @@ function PortfolioPage() {
   )
 }
 
-function ServicePage({ service }: { service: ServicePackage }) {
+function ServiceDetailCard({ service }: { service: ServicePackage }) {
+  return (
+    <div className="service-detail-card" id={service.slug}>
+      <div className="service-detail-intro">
+        <p className="eyebrow">{service.title}</p>
+        <h2>Included in this package.</h2>
+        <p>{service.bestFor}</p>
+        <div className="service-detail-price">
+          <span>{service.price}</span>
+          <p>{service.session}</p>
+        </div>
+      </div>
+      <ul className="service-detail-list">
+        {service.details.map((detail) => (
+          <li key={detail}>{detail}</li>
+        ))}
+      </ul>
+      <a className="button button-primary service-cta" href={`/?package=${service.slug}#contact`}>
+        Start with this package
+      </a>
+    </div>
+  )
+}
+
+function ServicePage({ initialServiceSlug }: { initialServiceSlug?: string }) {
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '')
+    const targetId = hash || initialServiceSlug
+
+    if (!targetId) {
+      return
+    }
+
+    const scrollToService = () => {
+      const target = document.getElementById(targetId)
+
+      if (!target) {
+        return
+      }
+
+      const targetTop = target.getBoundingClientRect().top + window.scrollY
+      window.scrollTo({ top: Math.max(targetTop - 92, 0), behavior: 'smooth' })
+    }
+
+    const scrollDelays = [0, 100, 300]
+    const timers = scrollDelays.map((delay) => window.setTimeout(scrollToService, delay))
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer))
+    }
+  }, [initialServiceSlug])
+
   return (
     <main className="site-shell">
       <header className="site-header">
@@ -380,8 +492,8 @@ function ServicePage({ service }: { service: ServicePackage }) {
           </a>
           <div className="nav-links">
             <a href="/">Home</a>
-            <a href="/#services">Services</a>
-            <a href="/#portfolio">Portfolio</a>
+            <a href="/portfolio">Portfolio</a>
+            <a href="/services">Services</a>
             <a href="/#contact">Contact</a>
           </div>
         </nav>
@@ -391,33 +503,15 @@ function ServicePage({ service }: { service: ServicePackage }) {
         <a className="back-link" href="/#services">
           &lt;- Back to services
         </a>
-        <p className="eyebrow">Service package</p>
-        <div className="service-page-heading">
-          <div>
-            <h1>{service.title}</h1>
-            <p>{service.bestFor}</p>
-          </div>
-          <div className="service-price-panel" aria-label={`${service.title} price and session length`}>
-            <span>{service.price}</span>
-            <p>{service.session}</p>
-          </div>
-        </div>
+        <p className="eyebrow">Service packages</p>
+        <h1>Choose the aerial package that fits your project.</h1>
       </section>
 
       <section className="service-page-section">
-        <div className="service-detail-card">
-          <div>
-            <p className="eyebrow">Included</p>
-            <h2>Included in this package.</h2>
-          </div>
-          <ul className="service-detail-list">
-            {service.details.map((detail) => (
-              <li key={detail}>{detail}</li>
-            ))}
-          </ul>
-          <a className="button button-primary service-cta" href={`/?package=${service.slug}#contact`}>
-            Start with this package
-          </a>
+        <div className="service-detail-stack">
+          {[...services, customService].map((service) => (
+            <ServiceDetailCard service={service} key={service.slug} />
+          ))}
         </div>
       </section>
     </main>
@@ -528,8 +622,8 @@ function HomePage() {
             >
               Home
             </a>
-            <a href="#services">Services</a>
-            <a href="#portfolio">Portfolio</a>
+            <a href="/portfolio">Portfolio</a>
+            <a href="/services">Services</a>
             <a href="#contact" onClick={handleContactLinkClick}>
               Contact
             </a>
@@ -564,6 +658,25 @@ function HomePage() {
         </div>
       </section>
 
+      <section id="portfolio" className="section section-contrast">
+        <div className="section-heading section-heading-split">
+          <div>
+            <p className="eyebrow">Portfolio</p>
+            <h2>Photo categories real estate teams and businesses ask for most.</h2>
+          </div>
+        </div>
+        <div className="portfolio-grid">
+          {homepagePortfolioItems.map((item) => (
+            <article className="portfolio-card" key={item.title}>
+              <PortfolioImageTile item={item} onOpen={setActiveImage} />
+            </article>
+          ))}
+        </div>
+        <a className="view-more-link" href="/portfolio">
+          View my expanded portfolio
+        </a>
+      </section>
+
       <section id="services" className="section">
         <div className="section-heading">
           <p className="eyebrow">Services</p>
@@ -571,7 +684,7 @@ function HomePage() {
         </div>
         <div className="service-grid">
           {services.map((service) => (
-            <a className="service-card" href={`/services/${service.slug}`} key={service.title}>
+            <a className="service-card" href={`/services#${service.slug}`} key={service.title}>
               <div className="service-card-topline">
                 <h3>{service.title}</h3>
               </div>
@@ -585,35 +698,19 @@ function HomePage() {
         </div>
       </section>
 
-      <section id="portfolio" className="section section-contrast">
-        <div className="section-heading section-heading-split">
-          <div>
-            <p className="eyebrow">Portfolio</p>
-            <h2>Photo categories real estate teams and businesses ask for most.</h2>
-          </div>
-        </div>
-        <div className="portfolio-grid">
-          {portfolioItems.map((item) => (
-            <article className="portfolio-card" key={item.title}>
-              <PortfolioImageTile item={item} onOpen={setActiveImage} />
-            </article>
-          ))}
-        </div>
-        <a className="view-more-link" href="/portfolio">
-          View my expanded portfolio
-        </a>
-      </section>
-
       <section className="section about-section">
         <div>
           <p className="eyebrow">Why SMAerial</p>
           <h2>Professional, practical drone photography with the end use in mind.</h2>
         </div>
-        <p>
-          The goal is simple: give property and business owners visuals that make a location easier
-          to understand and easier to market. Every shoot is planned around the angles, timing, and
-          deliverables that will help the finished images work harder.
-        </p>
+        <div className="about-content">
+          <p>
+            The goal is simple: give property and business owners visuals that make a location easier
+            to understand and easier to market. Every shoot is planned around the angles, timing, and
+            deliverables that will help the finished images work harder.
+          </p>
+          <WhySmaerialList />
+        </div>
       </section>
 
       <section id="contact" className="contact-section">
@@ -688,10 +785,10 @@ function HomePage() {
 function App() {
   const path = window.location.pathname.replace(/\/$/, '')
   const serviceSlug = path.match(/^\/services\/([^/]+)$/)?.[1]
-  const selectedService = services.find((service) => service.slug === serviceSlug)
+  const selectedServiceSlug = services.find((service) => service.slug === serviceSlug)?.slug
 
-  if (selectedService) {
-    return <ServicePage service={selectedService} />
+  if (path === '/services' || selectedServiceSlug) {
+    return <ServicePage initialServiceSlug={selectedServiceSlug} />
   }
 
   if (path === '/portfolio') {
