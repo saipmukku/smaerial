@@ -1,26 +1,17 @@
-# SMAerial Portfolio Website
+# SMAerial Project Notes
 
-This is a Vite + React + TypeScript project for the SMAerial aerial drone photography portfolio website.
+SMAerial is a Vite, React, and TypeScript portfolio site for aerial drone photography and video services.
 
-## Project Guidelines
+## Guidelines
 
-- **Framework**: React 19 with TypeScript
-- **Build Tool**: Vite
-- **Styling**: Custom CSS with responsive design
-- **Target Audience**: Realtors and business owners
-- **Key Sections**: Hero, Services, Portfolio, About, Contact
+- Keep the site responsive and mobile-first.
+- Preserve the lightweight static-site architecture.
+- Use existing React and CSS patterns before adding dependencies.
+- Keep media paths under `public/images` and `public/videos`.
+- Use `npm run lint` and `npm run build` before shipping changes.
 
-## Development
+## Main Routes
 
-- Use `npm run dev` for development
-- Build with `npm run build`
-- Follow TypeScript best practices
-- Maintain responsive design
-- Use semantic HTML
-
-## Customization Notes
-
-- Replace placeholder images in `public/` with actual aerial photos
-- Update content in `src/App.tsx`
-- Modify styles in `src/App.css` for branding
-- Ensure accessibility and performance
+- `/` home page with portfolio and service previews
+- `/portfolio` expanded photo and video portfolio
+- `/services` package details
