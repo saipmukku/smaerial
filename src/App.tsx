@@ -427,6 +427,17 @@ function ServicePage({ service }: { service: ServicePackage }) {
 function HomePage() {
   const currentYear = new Date().getFullYear()
   const [activeImage, setActiveImage] = useState<LightboxImage | null>(null)
+  const [showInquiryToast, setShowInquiryToast] = useState(() => {
+    const wasSent = new URLSearchParams(window.location.search).has('sent')
+    const pendingToast = window.sessionStorage.getItem('smaerial-inquiry-sent') === 'true'
+
+    if (pendingToast) {
+      window.sessionStorage.removeItem('smaerial-inquiry-sent')
+    }
+
+    return wasSent || pendingToast
+  })
+  const formReturnUrl = `${window.location.origin}${window.location.pathname}?sent=1#contact`
   const selectedPackage =
     services.find((service) => service.slug === new URLSearchParams(window.location.search).get('package'))?.title ?? ''
 
@@ -455,6 +466,20 @@ function HomePage() {
   }, [])
 
   useEffect(() => {
+    if (!showInquiryToast) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setShowInquiryToast(false)
+    }, 5000)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [showInquiryToast])
+
+  useEffect(() => {
     const hash = window.location.hash.replace('#', '')
 
     if (!hash) {
@@ -481,6 +506,11 @@ function HomePage() {
 
   return (
     <main className="site-shell">
+      {showInquiryToast ? (
+        <div className="inquiry-toast" role="status" aria-live="polite">
+          Inquiry sent. SMAerial will reach out soon!
+        </div>
+      ) : null}
       <header className="site-header">
         <nav className="nav" aria-label="Main navigation">
           <a className="brand" href="#home" aria-label="SMAerial home">
@@ -599,10 +629,18 @@ function HomePage() {
           <img className="contact-portrait" src="/images/portrait.jpeg" alt="SMAerial drone photographer" />
         </div>
 
-        <form className="contact-form" action="https://formsubmit.co/saipmukku@gmail.com" method="post">
+        <form
+          className="contact-form"
+          action="https://formsubmit.co/saipmukku@gmail.com"
+          method="post"
+          onSubmit={() => {
+            window.sessionStorage.setItem('smaerial-inquiry-sent', 'true')
+          }}
+        >
           <input type="hidden" name="_subject" value="New SMAerial inquiry" />
           <input type="hidden" name="_template" value="table" />
           <input type="hidden" name="_captcha" value="false" />
+          <input type="hidden" name="_next" value={formReturnUrl} />
           <div className="form-field">
             <label htmlFor="name">Name</label>
             <input id="name" name="name" type="text" autoComplete="name" required />
