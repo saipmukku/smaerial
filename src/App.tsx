@@ -1,20 +1,52 @@
-import { useEffect, useRef, useState } from 'react'
-import MuxPlayer from '@mux/mux-player-react'
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import heroImage from './assets/hero.png'
 import './App.css'
 
 const services = [
   {
-    title: 'Residential Listings',
-    text: 'Exterior aerial photography that shows lot size, curb appeal, roof lines, pools, acreage, and neighborhood context.',
+    title: 'Basic Package',
+    slug: 'basic',
+    price: '$200',
+    session: 'Up to 2 hours',
+    summary: '10 photos, 3 videos, and all high-resolution raw files delivered by your preferred method.',
+    bestFor: 'Hobbies, small business needs, social media posts, and personal projects.',
+    details: [
+      '10 aerial photos',
+      '3 aerial videos',
+      'Raw high-resolution files included through your preferred delivery method',
+      'One drone session up to 2 hours',
+      'Flexible for hobbies, business, social media, and general content needs',
+    ],
   },
   {
-    title: 'Commercial Properties',
-    text: 'Clean overhead and angled views for offices, retail centers, job sites, venues, and business locations.',
+    title: 'Business Package',
+    slug: 'business',
+    price: '$350',
+    session: 'Up to 3 hours',
+    summary: '15 photos, 5 videos, raw files, and a working session to curate content to your needs.',
+    bestFor: 'Real estate listings, business marketing, property showcases, and content campaigns.',
+    details: [
+      '15 aerial photos',
+      '5 aerial videos',
+      'Raw high-resolution files included through your preferred delivery method',
+      'One drone session up to 3 hours',
+      'Working session to curate the content to your needs',
+    ],
   },
   {
-    title: 'Marketing Packages',
-    text: 'Photo sets sized for MLS, websites, social media, flyers, and investor presentations.',
+    title: 'Premium Package',
+    slug: 'premium',
+    price: '$500',
+    session: 'Up to 3 hours',
+    summary: '20 edited photos, 7 edited videos, raw files, and a working session for the most complete content set.',
+    bestFor: 'Larger properties, full brand shoots, premium listings, and deeper marketing coverage.',
+    details: [
+      '20 edited aerial photos',
+      '7 edited aerial videos',
+      'All high-resolution raw files included on a memory card',
+      'One drone session up to 3 hours',
+      'Working session to curate the content to your needs',
+    ],
   },
 ]
 
@@ -44,23 +76,24 @@ const portfolioItems = [
 const portfolioVideos = [
   {
     title: 'Aerial video 1',
-    playbackId: 'R02Yp011LtG1bUkTIkmnX011cXYVv02WlMIUbhdM9MPRNPk',
+    src: '/videos/vid1.mp4',
   },
   {
     title: 'Aerial video 2',
-    playbackId: 'k5lLII3mNyFpGUnUPFNjdepNl02wg3BaHoUuNYc00vXBY',
+    src: '/videos/vid2.mp4',
   },
   {
     title: 'Aerial video 3',
-    playbackId: 'jchZ1bzM00gKlzv9WweXESxjqKDMIzzvOqVZLRYWo828',
+    src: '/videos/vid3.mp4',
   },
   {
     title: 'Aerial video 4',
-    playbackId: 'M5Hws2Czs65x1svc2so3y8uzsYdXPFJ7GrgPfW6FVnM',
+    src: '/videos/vid4.mp4',
   },
 ]
 
 type PortfolioItem = (typeof portfolioItems)[number]
+type ServicePackage = (typeof services)[number]
 
 type LightboxImage = {
   src: string
@@ -68,12 +101,8 @@ type LightboxImage = {
 }
 
 type LightboxVideo = {
-  playbackId: string
+  src: string
   title: string
-}
-
-function getMuxStreamUrl(playbackId: string) {
-  return `https://stream.mux.com/${playbackId}.m3u8?max_resolution=1080p&rendition_order=desc`
 }
 
 function ImageLightbox({ image, onClose }: { image: LightboxImage | null; onClose: () => void }) {
@@ -106,21 +135,18 @@ function VideoLightbox({ video, onClose }: { video: LightboxVideo | null; onClos
         <button className="lightbox-close" type="button" aria-label="Close video preview" onClick={onClose}>
           Close
         </button>
-        <MuxPlayer
+        <video
           className="lightbox-video-player"
-          playbackId={video.playbackId}
           title={video.title}
-          videoTitle={video.title}
-          streamType="on-demand"
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
-          maxResolution="1080p"
-          maxAutoResolution="1080p"
-          renditionOrder="desc"
-        />
+          controls
+        >
+          <source src={video.src} type="video/mp4" />
+        </video>
       </div>
     </div>
   )
@@ -151,30 +177,60 @@ function PortfolioImageTile({
 
 function PortfolioVideoTile({
   title,
-  playbackId,
+  src,
   onOpen,
 }: {
   title: string
-  playbackId: string
+  src: string
   onOpen: (video: LightboxVideo) => void
 }) {
-  const hasPlaybackId = playbackId.trim().length > 0
-  const streamUrl = hasPlaybackId ? getMuxStreamUrl(playbackId) : ''
+  const hasVideo = src.trim().length > 0
   const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  const prepareVideo = useCallback(
+    (video: HTMLVideoElement) => {
+      video.muted = true
+      video.defaultMuted = true
+      video.autoplay = true
+      video.loop = true
+      video.playsInline = true
+      video.preload = 'auto'
+      video.setAttribute('muted', '')
+      video.setAttribute('autoplay', '')
+      video.setAttribute('playsinline', '')
+      video.setAttribute('webkit-playsinline', '')
+
+      if (video.src !== new URL(src, window.location.href).href) {
+        video.src = src
+        video.load()
+      }
+    },
+    [src],
+  )
+
+  const setPreviewVideo = useCallback(
+    (video: HTMLVideoElement | null) => {
+      videoRef.current = video
+
+      if (!video || !hasVideo) {
+        return
+      }
+
+      prepareVideo(video)
+      void video.play().catch(() => {})
+    },
+    [hasVideo, prepareVideo],
+  )
 
   useEffect(() => {
     const video = videoRef.current
 
-    if (!video || !hasPlaybackId) {
+    if (!video || !hasVideo) {
       return
     }
 
     const playPreview = () => {
-      video.muted = true
-      video.defaultMuted = true
-      video.playsInline = true
-      video.setAttribute('muted', '')
-      video.setAttribute('playsinline', '')
+      prepareVideo(video)
       void video.play().catch(() => {})
     }
 
@@ -210,7 +266,7 @@ function PortfolioVideoTile({
       window.removeEventListener('load', playPreview)
       document.removeEventListener('visibilitychange', playPreview)
     }
-  }, [hasPlaybackId, streamUrl])
+  }, [hasVideo, prepareVideo])
 
   return (
     <button
@@ -218,15 +274,15 @@ function PortfolioVideoTile({
       type="button"
       aria-label={`View larger video: ${title}`}
       onClick={() => {
-        if (hasPlaybackId) {
-          onOpen({ playbackId, title })
+        if (hasVideo) {
+          onOpen({ src, title })
         }
       }}
-      disabled={!hasPlaybackId}
+      disabled={!hasVideo}
     >
-      {hasPlaybackId ? (
+      {hasVideo ? (
         <video
-          ref={videoRef}
+          ref={setPreviewVideo}
           className="portfolio-video-player"
           autoPlay
           loop
@@ -238,14 +294,13 @@ function PortfolioVideoTile({
             const video = videoRef.current
             if (video) {
               video.muted = true
+              video.defaultMuted = true
               void video.play().catch(() => {})
             }
           }}
-        >
-          <source src={streamUrl} type="application/x-mpegURL" />
-        </video>
+        />
       ) : (
-        <span>Add Mux playback ID</span>
+        <span>Add video file</span>
       )}
     </button>
   )
@@ -264,6 +319,7 @@ function PortfolioPage() {
             <span>SMAerial</span>
           </a>
           <div className="nav-links">
+            <a href="/">Home</a>
             <a href="/#services">Services</a>
             <a href="/#portfolio">Portfolio</a>
             <a href="/#contact">Contact</a>
@@ -297,12 +353,12 @@ function PortfolioPage() {
         <div className="section-heading">
           <p className="eyebrow">Video</p>
           <h2>Aerial video</h2>
-          <p className="video-note">Note: Please left-click to start the videos!</p>
+          <p className="video-note">Note: Please left-click on the page to start all of the videos!</p>
         </div>
         <div className="portfolio-video-grid">
           {portfolioVideos.map((video) => (
             <article className="portfolio-video-card" key={video.title}>
-              <PortfolioVideoTile title={video.title} playbackId={video.playbackId} onOpen={setActiveVideo} />
+              <PortfolioVideoTile title={video.title} src={video.src} onOpen={setActiveVideo} />
             </article>
           ))}
         </div>
@@ -313,9 +369,115 @@ function PortfolioPage() {
   )
 }
 
+function ServicePage({ service }: { service: ServicePackage }) {
+  return (
+    <main className="site-shell">
+      <header className="site-header">
+        <nav className="nav" aria-label="Main navigation">
+          <a className="brand" href="/" aria-label="SMAerial home">
+            <span className="brand-mark">SM</span>
+            <span>SMAerial</span>
+          </a>
+          <div className="nav-links">
+            <a href="/">Home</a>
+            <a href="/#services">Services</a>
+            <a href="/#portfolio">Portfolio</a>
+            <a href="/#contact">Contact</a>
+          </div>
+        </nav>
+      </header>
+
+      <section className="service-page-hero">
+        <a className="back-link" href="/#services">
+          &lt;- Back to services
+        </a>
+        <p className="eyebrow">Service package</p>
+        <div className="service-page-heading">
+          <div>
+            <h1>{service.title}</h1>
+            <p>{service.bestFor}</p>
+          </div>
+          <div className="service-price-panel" aria-label={`${service.title} price and session length`}>
+            <span>{service.price}</span>
+            <p>{service.session}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="service-page-section">
+        <div className="service-detail-card">
+          <div>
+            <p className="eyebrow">Included</p>
+            <h2>Included in this package.</h2>
+          </div>
+          <ul className="service-detail-list">
+            {service.details.map((detail) => (
+              <li key={detail}>{detail}</li>
+            ))}
+          </ul>
+          <a className="button button-primary service-cta" href={`/?package=${service.slug}#contact`}>
+            Start with this package
+          </a>
+        </div>
+      </section>
+    </main>
+  )
+}
+
 function HomePage() {
   const currentYear = new Date().getFullYear()
   const [activeImage, setActiveImage] = useState<LightboxImage | null>(null)
+  const selectedPackage =
+    services.find((service) => service.slug === new URLSearchParams(window.location.search).get('package'))?.title ?? ''
+
+  const scrollToSection = useCallback((hash: string) => {
+    if (hash === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
+    const target = document.getElementById(hash)
+
+    if (!target) {
+      return
+    }
+
+    const targetTop = target.getBoundingClientRect().top + window.scrollY
+
+    if (hash === 'contact') {
+      const centeredTop = targetTop - (window.innerHeight - target.offsetHeight) / 2 + 24
+      const sectionTop = targetTop + 24
+      window.scrollTo({ top: Math.max(Math.min(centeredTop, sectionTop), 0), behavior: 'smooth' })
+      return
+    }
+
+    window.scrollTo({ top: Math.max(targetTop - 92, 0), behavior: 'smooth' })
+  }, [])
+
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '')
+
+    if (!hash) {
+      return
+    }
+
+    const scrollToHash = () => {
+      scrollToSection(hash)
+    }
+
+    const scrollDelays = [0, 100, 300, 700]
+    const timers = scrollDelays.map((delay) => window.setTimeout(scrollToHash, delay))
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer))
+    }
+  }, [scrollToSection])
+
+  const handleContactLinkClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault()
+    window.history.pushState(null, '', '#contact')
+    scrollToSection('contact')
+  }
 
   return (
     <main className="site-shell">
@@ -326,9 +488,21 @@ function HomePage() {
             <span>SMAerial</span>
           </a>
           <div className="nav-links">
+            <a
+              href="#home"
+              onClick={(event) => {
+                event.preventDefault()
+                window.history.pushState(null, '', '#home')
+                scrollToSection('home')
+              }}
+            >
+              Home
+            </a>
             <a href="#services">Services</a>
             <a href="#portfolio">Portfolio</a>
-            <a href="#contact">Contact</a>
+            <a href="#contact" onClick={handleContactLinkClick}>
+              Contact
+            </a>
           </div>
         </nav>
       </header>
@@ -343,7 +517,7 @@ function HomePage() {
             project.
           </p>
           <div className="hero-actions" aria-label="Primary actions">
-            <a className="button button-primary" href="#contact">
+            <a className="button button-primary" href="#contact" onClick={handleContactLinkClick}>
               Request a Shoot
             </a>
             <a className="button button-secondary" href="#portfolio">
@@ -367,10 +541,16 @@ function HomePage() {
         </div>
         <div className="service-grid">
           {services.map((service) => (
-            <article className="service-card" key={service.title}>
-              <h3>{service.title}</h3>
-              <p>{service.text}</p>
-            </article>
+            <a className="service-card" href={`/services/${service.slug}`} key={service.title}>
+              <div className="service-card-topline">
+                <h3>{service.title}</h3>
+              </div>
+              <p>{service.summary}</p>
+              <div className="service-meta">
+                <span>{service.session}</span>
+                <span>View details -&gt;</span>
+              </div>
+            </a>
           ))}
         </div>
       </section>
@@ -381,10 +561,6 @@ function HomePage() {
             <p className="eyebrow">Portfolio</p>
             <h2>Photo categories real estate teams and businesses ask for most.</h2>
           </div>
-          <p>
-            Replace these sample panels with your strongest finished shoots as the portfolio grows.
-            The layout is ready for real aerial images.
-          </p>
         </div>
         <div className="portfolio-grid">
           {portfolioItems.map((item) => (
@@ -393,8 +569,8 @@ function HomePage() {
             </article>
           ))}
         </div>
-        <a className="view-more-link" href="#portfolio">
-          View more -&gt;
+        <a className="view-more-link" href="/portfolio">
+          View my expanded portfolio
         </a>
       </section>
 
@@ -436,6 +612,18 @@ function HomePage() {
             <input id="email" name="email" type="email" autoComplete="email" required />
           </div>
           <div className="form-field">
+            <label htmlFor="package">Package</label>
+            <select id="package" name="package" defaultValue={selectedPackage} required>
+              <option value="" disabled>
+                Select a package
+              </option>
+              <option value="Basic Package">Basic Package</option>
+              <option value="Business Package">Business Package</option>
+              <option value="Premium Package">Premium Package</option>
+              <option value="Custom Inquiry">Custom Inquiry</option>
+            </select>
+          </div>
+          <div className="form-field">
             <label htmlFor="message">Project details</label>
             <textarea
               id="message"
@@ -461,6 +649,12 @@ function HomePage() {
 
 function App() {
   const path = window.location.pathname.replace(/\/$/, '')
+  const serviceSlug = path.match(/^\/services\/([^/]+)$/)?.[1]
+  const selectedService = services.find((service) => service.slug === serviceSlug)
+
+  if (selectedService) {
+    return <ServicePage service={selectedService} />
+  }
 
   if (path === '/portfolio') {
     return <PortfolioPage />
