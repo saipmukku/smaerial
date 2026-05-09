@@ -82,14 +82,13 @@
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
   width: 42px;
   height: 42px;
+  border: 2px solid rgba(65, 105, 225, 0.14);
   border-radius: 50%;
-  color: #f8faf7;
-  background: var(--trim);
-  font-size: 0.8rem;
+  object-fit: cover;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(65, 105, 225, 0.14);
 }
 
 .nav-links {

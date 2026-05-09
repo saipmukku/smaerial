@@ -390,7 +390,7 @@ function PortfolioPage() {
       <header className="site-header">
         <nav className="nav" aria-label="Main navigation">
           <a className="brand" href="/" aria-label="SMAerial home">
-            <span className="brand-mark">SM</span>
+            <img className="brand-mark" src="/images/favicon.png" alt="" aria-hidden="true" />
             <span>SMAerial</span>
           </a>
           <div className="nav-links">
@@ -501,7 +501,7 @@ function ServicePage({ initialServiceSlug }: { initialServiceSlug?: string }) {
       <header className="site-header">
         <nav className="nav" aria-label="Main navigation">
           <a className="brand" href="/" aria-label="SMAerial home">
-            <span className="brand-mark">SM</span>
+            <img className="brand-mark" src="/images/favicon.png" alt="" aria-hidden="true" />
             <span>SMAerial</span>
           </a>
           <div className="nav-links">
@@ -629,7 +629,7 @@ function HomePage() {
       <header className="site-header">
         <nav className="nav" aria-label="Main navigation">
           <a className="brand" href="#home" aria-label="SMAerial home">
-            <span className="brand-mark">SM</span>
+            <img className="brand-mark" src="/images/favicon.png" alt="" aria-hidden="true" />
             <span>SMAerial</span>
           </a>
           <div className="nav-links">
