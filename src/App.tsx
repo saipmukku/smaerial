@@ -375,7 +375,7 @@ function FreeIntroCallout() {
       <p>
         If you are interested in SMAerial, I offer a completely free 30-minute session so you
         can get a clear idea of whether aerial photos or videos will benefit your project. This is
-        available for every prospective client at no charge, please contact me through the form below and select "Trial"!
+        available for every prospective client at no charge, please contact me through the form below and select "Trial" if you are interested!
       </p>
     </div>
   )
