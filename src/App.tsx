@@ -761,7 +761,7 @@ function HomePage() {
 
         <form
           className="contact-form"
-          action="https://formsubmit.co/saipmukku@gmail.com"
+          action="https://formsubmit.co/inquiry@smaerial.com"
           method="post"
           onSubmit={() => {
             window.sessionStorage.setItem('smaerial-inquiry-sent', 'true')
