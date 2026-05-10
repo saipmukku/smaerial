@@ -74,6 +74,14 @@ const customService = {
   ],
 }
 
+const contactPackageOptions = [
+  { label: 'Basic Package', value: 'Basic Package', slug: 'basic' },
+  { label: 'Business Package', value: 'Business Package', slug: 'business' },
+  { label: 'Premium Package', value: 'Premium Package', slug: 'premium' },
+  { label: 'Custom Inquiry', value: 'Custom Inquiry', slug: 'custom' },
+  { label: 'Trial', value: 'Trial', slug: 'trial' },
+]
+
 const homepagePortfolioItems = [
   {
     title: 'Scenic & Lifestyle',
@@ -375,8 +383,11 @@ function FreeIntroCallout() {
       <p>
         If you are interested in SMAerial, I offer a completely free 30-minute session so you
         can get a clear idea of whether aerial photos or videos will benefit your project. This is
-        available for every prospective client at no charge, please contact me through the form below and select "Trial" if you are interested!
+        available for every prospective client at no charge.
       </p>
+      <a className="trial-cta" href="/?package=trial#contact">
+        Book a free trial session
+      </a>
     </div>
   )
 }
@@ -548,7 +559,7 @@ function HomePage() {
   })
   const formReturnUrl = `${window.location.origin}/?sent=1#contact`
   const selectedPackage =
-    services.find((service) => service.slug === new URLSearchParams(window.location.search).get('package'))?.title ?? ''
+    contactPackageOptions.find((option) => option.slug === new URLSearchParams(window.location.search).get('package'))?.value ?? ''
 
   const scrollToSection = useCallback((hash: string) => {
     if (hash === 'home') {
@@ -774,11 +785,11 @@ function HomePage() {
               <option value="" disabled>
                 Select a package
               </option>
-              <option value="Basic Package">Basic Package</option>
-              <option value="Business Package">Business Package</option>
-              <option value="Premium Package">Premium Package</option>
-              <option value="Custom Inquiry">Custom Inquiry</option>
-              <option value="Trial">Trial</option>
+              {contactPackageOptions.map((option) => (
+                <option value={option.value} key={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="form-field">

@@ -412,6 +412,34 @@ h3 {
   line-height: 1.65;
 }
 
+.trial-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  margin-top: 22px;
+  border: 1px solid rgba(65, 105, 225, 0.22);
+  border-radius: 999px;
+  padding: 0 26px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--trim), #315ad7);
+  box-shadow:
+    0 16px 34px rgba(65, 105, 225, 0.24),
+    0 1px 0 rgba(255, 255, 255, 0.26) inset;
+  font-weight: 850;
+  text-decoration: none;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.trial-cta:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 20px 42px rgba(65, 105, 225, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.26) inset;
+}
+
 .service-card,
 .portfolio-card,
 .contact-form {
@@ -1341,6 +1369,7 @@ h3 {
   }
 
   .view-more-link,
+  .trial-cta,
   .service-cta,
   .contact-form button {
     width: 100%;
